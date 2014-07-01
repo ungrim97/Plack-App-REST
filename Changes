@@ -2,5 +2,6 @@ Revision history for Perl extension Plack-App-REST
 
 {{$NEXT}}
 
+    - Implemented DBIC Resource GET Requests
     - original version
 
