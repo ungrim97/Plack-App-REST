@@ -32,6 +32,7 @@ sub dispatch_request {
 
     map {
         my $resource = $_;
+        warn "Creating path for $resource";
         (
             "GET + /".$resource."/ + ?*" => sub {
                 my ($self, $params) = @_;
