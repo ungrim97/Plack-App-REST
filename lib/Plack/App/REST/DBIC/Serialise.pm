@@ -4,7 +4,7 @@ use Moo::Role;
 use URI;
 
 sub serialise_results {
-    my ($self, $results, $params, $offset, $rows) = @_;
+    my ($self, $results, $params, $pager, $rows) = @_;
 
     my @results;
     while (my $result = $results->next){
@@ -12,14 +12,14 @@ sub serialise_results {
     }
     return unless @results;
 
-    my $href = URI->new($self->request->base.$results->result_source->source_name);
+    my $href = URI->new($self->request->base.$results->result_source->source_name."/");
     $href->query_form(%$params) if keys %$params;
-    $href->query_form(offset => $offset, rows => $rows, $href->query_form);
+    $href->query_form(page => $pager->current_page, page_size => $rows, $href->query_form);
 
     return {
-        total_result    => $results->pager->total_entries,
-        offset          => $offset,
-        results         => $results->pager->entries_on_this_page,
+        total_results   => $pager->total_entries,
+        page            => $pager->current_page,
+        page_size       => $pager->entries_on_this_page,
         href            => $href->as_string,
         data            => \@results,
     }
@@ -28,7 +28,7 @@ sub serialise_results {
 sub serialise_row {
     my ($self, $result) = @_;
 
-    my $href = URI->new($self->request->base.$result->result_source->source_name);
+    my $href = URI->new($self->request->base.$result->result_source->source_name."/");
     $href->query_form(map {$_ => $result->$_ } $result->primary_columns);
 
     return {

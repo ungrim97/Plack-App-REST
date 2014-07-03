@@ -37,13 +37,15 @@ sub get_data {
     my ($self) = @_;
 
     my $params      = $self->db_params;
-    my $offset      = delete $params->{offset} // 0;
-    my $rows        = delete $params->{results} // 10;
+    my $page        = delete $params->{page} // 1;
+    my $rows        = delete $params->{page_size} // 10;
     my $resultset   = $self->db_schema->resultset($self->db_table);
 
     my $results     = $resultset->search($params, {page => 1, offset => $offset, rows => $rows});
 
-    return $self->serialise_results($results, $params, $offset, $rows);
+    my $results = $resultset->search($params, {page => $page, rows => $rows});
+
+    return $self->serialise_results($results, $params, $results->pager, $rows);
 }
 
 sub to_json {
