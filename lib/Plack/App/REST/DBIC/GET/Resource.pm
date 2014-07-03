@@ -41,7 +41,9 @@ sub get_data {
     my $rows        = delete $params->{page_size} // 10;
     my $resultset   = $self->db_schema->resultset($self->db_table);
 
-    my $results     = $resultset->search($params, {page => 1, offset => $offset, rows => $rows});
+    for my $param (keys %$params){
+        return \400 unless $resultset->result_source->has_column($param);
+    }
 
     my $results = $resultset->search($params, {page => $page, rows => $rows});
 
@@ -54,6 +56,8 @@ sub to_json {
     my $response = $self->get_data;
 
     return \404 unless $response;
+    return $response if ref $response eq 'SCALAR';
+
     return JSON::to_json($response),
 }
 
