@@ -1,11 +1,41 @@
 package Plack::App::REST;
 use 5.008005;
-use strict;
-use warnings;
+
+use Moo;
+use Plack::Util;
 
 our $VERSION = "0.01";
 
+has persistence_mapper => (
+    is => 'ro',
+    isa => sub {
+        return unless $_[0];
+        return Plack::Util::load_class($_[0], 'Plack::App::REST');
+    },
+);
 
+has persistence_args => (
+    is => 'ro',
+);
+
+sub init {
+    my $class = shift;
+
+    my $self = $class->new(@_);
+
+    return $self->init_rest_resource;
+}
+
+sub init_rest_resource {
+    my ($self) = @_;
+
+    my $resource_initialiser = Plack::Util::load_class($self->persistence_mapper, 'Plack::App::REST');
+
+    $resource_initialiser->new(
+        @{$self->persistence_args},
+    )->to_psgi_app;
+
+}
 
 1;
 __END__
